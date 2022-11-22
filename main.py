@@ -60,7 +60,7 @@ async def train_route():
 async def predict_route():
     try:
         # get data from user csv file
-        # conver csv file to dataframe
+        # convert csv file to dataframe
 
         df = None
         model_resolver = ModelResolver(model_dir=SAVED_MODEL_DIR)
