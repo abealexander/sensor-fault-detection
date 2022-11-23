@@ -4,18 +4,17 @@ import os, sys
 from sensor.logger import logging
 from sensor.pipeline import training_pipeline
 from sensor.pipeline.training_pipeline import TrainPipeline
-import os
 from sensor.utils.main_utils import read_yaml_file
 from sensor.constant.training_pipeline import SAVED_MODEL_DIR
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from sensor.constant.application import APP_HOST, APP_PORT
 from starlette.responses import RedirectResponse
 from uvicorn import run as app_run
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
 from sensor.ml.model.estimator import ModelResolver, TargetValueMapping
 from sensor.utils.main_utils import load_object
 from fastapi.middleware.cors import CORSMiddleware
-import os
+import pandas as pd
 
 env_file_path = os.path.join(os.getcwd(), "env.yaml")
 
@@ -56,13 +55,11 @@ async def train_route():
         return Response(f"Error Occurred! {e}")
 
 
-@app.get("/predict")
-async def predict_route():
+@app.post("/predict")
+async def predict_route(file: UploadFile = File(...)):
     try:
-        # get data from user csv file
-        # convert csv file to dataframe
+        df = pd.read_csv(file.file)
 
-        df = None
         model_resolver = ModelResolver(model_dir=SAVED_MODEL_DIR)
         if not model_resolver.is_model_exists():
             return Response("Model is not available")
@@ -75,10 +72,12 @@ async def predict_route():
             TargetValueMapping().reverse_mapping(), inplace=True
         )
 
-        # decide how to return file to user.
+        df.to_csv("predictions.csv")
+
+        return FileResponse("predictions.csv")
 
     except Exception as e:
-        raise Response(f"Error Occured! {e}")
+        return Response(f"Error Occured! {e}")
 
 
 def main():
