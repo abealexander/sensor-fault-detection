@@ -71,9 +71,8 @@ async def predict_route(file: UploadFile = File(...)):
         df["predicted_column"].replace(
             TargetValueMapping().reverse_mapping(), inplace=True
         )
-
+        # return df.to_html()
         df.to_csv("predictions.csv")
-
         return FileResponse("predictions.csv")
 
     except Exception as e:
